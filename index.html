@@ -234,11 +234,11 @@
 	var emojis = []
 	var base = 0.05
 	var treble = 0.55
-	emojis.push(makeEmoji("neutral", "/img/neutral.svg", [base, base, base, base]))
-	emojis.push(makeEmoji("angry", "/img/angry.svg", [treble, base, base, base]))
-	emojis.push(makeEmoji("sad", "/img/crying.svg", [base, treble, base, base]))
-	emojis.push(makeEmoji("surprised", "/img/surprised.svg", [base, base, treble, base]))
-	emojis.push(makeEmoji("happy", "/img/smiling.svg", [base, base, base, treble]))
+	emojis.push(makeEmoji("neutral", "./img/neutral.svg", [base, base, base, base]))
+	emojis.push(makeEmoji("angry", "./img/angry.svg", [treble, base, base, base]))
+	emojis.push(makeEmoji("sad", "./img/crying.svg", [base, treble, base, base]))
+	emojis.push(makeEmoji("surprised", "./img/surprised.svg", [base, base, treble, base]))
+	emojis.push(makeEmoji("happy", "./img/smiling.svg", [base, base, base, treble]))
 
 	function calculateDistanceSquared(weightArray, emojiWeightArray){
 		var d = 0;

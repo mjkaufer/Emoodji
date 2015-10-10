@@ -67,254 +67,281 @@
 				<video id="videoel" width="400" height="300" preload="auto" loop>
 				</video>
 				<canvas id="overlay" width="400" height="300"></canvas>
+				<p id="0"></p>
+				<p id="1"></p>
+				<p id="2"></p>
+				<p id="3"></p>
 			</div>
 			
 			<script>
-				var vid = document.getElementById('videoel');
-				var overlay = document.getElementById('overlay');
-				var overlayCC = overlay.getContext('2d');
-
-				navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-				window.URL = window.URL || window.webkitURL || window.msURL || window.mozURL;
-
-				// check for camerasupport
-				if (navigator.getUserMedia) {
-					// set up stream
-					
-					var videoSelector = {video : true};
-					if (window.navigator.appVersion.match(/Chrome\/(.*?) /)) {
-						var chromeVersion = parseInt(window.navigator.appVersion.match(/Chrome\/(\d+)\./)[1], 10);
-						if (chromeVersion < 20) {
-							videoSelector = "video";
-						}
-					};
 				
-					navigator.getUserMedia(videoSelector, function( stream ) {
-						if (vid.mozCaptureStream) {
-							vid.mozSrcObject = stream;
-						} else {
-							vid.src = (window.URL && window.URL.createObjectURL(stream)) || stream;
-							startVideo()
-						}
-						vid.play();
-					}, function() {
-						//insertAltVideo(vid);
-						alert("There was some problem trying to fetch video from your webcam. If you have a webcam, please make sure to accept when the browser asks for access to your webcam.");
-					});
-				} else {
-					//insertAltVideo(vid);
-					alert("This demo depends on getUserMedia, which your browser does not seem to support. :(");
-				}
-				
-				/*********** setup of emotion detection *************/
 
-				var ctrack = new clm.tracker({useWebGL : true});
-				ctrack.init(pModel);
+	var vid = document.getElementById('videoel');
+	var overlay = document.getElementById('overlay');
+	var overlayCC = overlay.getContext('2d');
 
-				function startVideo() {
-					// start video
-					vid.play();
-					// start tracking
-					ctrack.start(vid);
-					// start loop to draw face
-					drawLoop();
-				}
+	navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+	window.URL = window.URL || window.webkitURL || window.msURL || window.mozURL;
 
-				function averagePoints(pointArray){
-					//takes in array of 2 element arrays, returns 2 element array [xavg, yavg]
+	// check for camerasupport
+	if (navigator.getUserMedia) {
+		// set up stream
+		
+		var videoSelector = {video : true};
+		if (window.navigator.appVersion.match(/Chrome\/(.*?) /)) {
+			var chromeVersion = parseInt(window.navigator.appVersion.match(/Chrome\/(\d+)\./)[1], 10);
+			if (chromeVersion < 20) {
+				videoSelector = "video";
+			}
+		};
 
-					var averageCoordinates = [0,0]
+		navigator.getUserMedia(videoSelector, function( stream ) {
+			if (vid.mozCaptureStream) {
+				vid.mozSrcObject = stream;
+			} else {
+				vid.src = (window.URL && window.URL.createObjectURL(stream)) || stream;
+				startVideo()
+			}
+			vid.play();
+		}, function() {
+			//insertAltVideo(vid);
+			alert("There was some problem trying to fetch video from your webcam. If you have a webcam, please make sure to accept when the browser asks for access to your webcam.");
+		});
+	} else {
+		//insertAltVideo(vid);
+		alert("This demo depends on getUserMedia, which your browser does not seem to support. :(");
+	}
 
-					pointArray.forEach(function(point){
-						for(var i = 0; i < averageCoordinates.length; i++)
-							averageCoordinates[i] += point[i]
-					})
+	/*********** setup of emotion detection *************/
 
-					return averageCoordinates.map(function(e){
-						return e / pointArray.length
-					})
-				}
+	var ctrack = new clm.tracker({useWebGL : true});
+	ctrack.init(pModel);
 
-				function computeBoundingBox(pointArray){
-					//todo - outlier elimination?
-					var ret = {
-						maxX: pointArray[0][0],
-						maxY: pointArray[0][1],
-						minX: pointArray[0][0],
-						minY: pointArray[0][1]
-					}
+	function startVideo() {
+		// start video
+		vid.play();
+		// start tracking
+		ctrack.start(vid);
+		// start loop to draw face
+		drawLoop();
+	}
 
-					for(var i = 1; i < pointArray.length; i++){
-						var point = pointArray[i]
-						ret.maxX = Math.max(ret.maxX, point[0])
-						ret.minX = Math.min(ret.minX, point[0])
-						ret.maxY = Math.max(ret.maxY, point[1])
-						ret.minY = Math.min(ret.minY, point[1])
-					}
+	function averagePoints(pointArray){
+		//takes in array of 2 element arrays, returns 2 element array [xavg, yavg]
 
-					var verticalMarginRatio = 0.10
-					var upperVerticalRatio = 0.3//because the model does not include the top of the head
+		var averageCoordinates = [0,0]
 
-					var horizontalMarginRatio = 0.025
+		pointArray.forEach(function(point){
+			for(var i = 0; i < averageCoordinates.length; i++)
+				averageCoordinates[i] += point[i]
+		})
 
-					var verticalRange = ret.maxY - ret.minY
-					var horizontalRange = ret.maxX - ret.minX
+		return averageCoordinates.map(function(e){
+			return e / pointArray.length
+		})
+	}
 
-					var verticalMargin = verticalMarginRatio * verticalRange
-					var horizontalMargin = horizontalMarginRatio * horizontalRange
+	function computeBoundingBox(pointArray){
+		//todo - outlier elimination?
+		var ret = {
+			maxX: pointArray[0][0],
+			maxY: pointArray[0][1],
+			minX: pointArray[0][0],
+			minY: pointArray[0][1]
+		}
 
-					ret.maxX += horizontalMargin
-					ret.minX -= horizontalMargin
+		for(var i = 1; i < pointArray.length; i++){
+			var point = pointArray[i]
+			ret.maxX = Math.max(ret.maxX, point[0])
+			ret.minX = Math.min(ret.minX, point[0])
+			ret.maxY = Math.max(ret.maxY, point[1])
+			ret.minY = Math.min(ret.minY, point[1])
+		}
 
-					ret.maxY += verticalMargin 
-					ret.minY -= verticalMargin + verticalMarginRatio * verticalRange
+		var verticalMarginRatio = 0.10
+		var upperVerticalRatio = 0.3//because the model does not include the top of the head
 
-					ret.width = ret.maxX - ret.minX
-					ret.height = ret.maxY - ret.minY
+		var horizontalMarginRatio = 0.025
 
-					return ret
+		var verticalRange = ret.maxY - ret.minY
+		var horizontalRange = ret.maxX - ret.minX
 
+		var verticalMargin = verticalMarginRatio * verticalRange
+		var horizontalMargin = horizontalMarginRatio * horizontalRange
 
-				}
+		ret.maxX += horizontalMargin
+		ret.minX -= horizontalMargin
 
-				function makeCircle(boundingBox){
+		ret.maxY += verticalMargin 
+		ret.minY -= verticalMargin + verticalMarginRatio * verticalRange
 
-					var center = [boundingBox.minX + boundingBox.width / 2, boundingBox.minY + boundingBox.height / 2]
-					var radius = Math.pow(boundingBox.height * boundingBox.height + boundingBox.width * boundingBox.width, 1/2) / 2
+		ret.width = ret.maxX - ret.minX
+		ret.height = ret.maxY - ret.minY
 
-					return {
-						center: center,
-						radius: radius
-					}
-				}
-
-				function drawCircle(context, center, radius){
-					context.beginPath()
-
-					context.arc(center[0], center[1], radius, 0, 2 * Math.PI)
-
-					context.fill()
-				}
-
-				function createSmile(){
-					var source  = new Image();
-					source.src = "./media/smile.svg"
-					return source
-				}
-
-				var smile = createSmile()
+		return ret
 
 
-				function makeEmoji(name, src, weights){
-					var emoji = {
-						name: name,
-						src: src,
-						weights: weights.slice(0)
-					}
+	}
 
-					var source = new Image()
-					source.src = src
+	function makeCircle(boundingBox){
 
-					emoji.source = source
+		var center = [boundingBox.minX + boundingBox.width / 2, boundingBox.minY + boundingBox.height / 2]
+		var radius = Math.pow(boundingBox.height * boundingBox.height + boundingBox.width * boundingBox.width, 1/2) / 2
 
-					source.onload = function(){
-						emoji.source = source
-						globalSource = source
-					}
+		return {
+			center: center,
+			radius: radius
+		}
+	}
 
-					return emoji
+	function drawCircle(context, center, radius){
+		context.beginPath()
 
-				}
+		context.arc(center[0], center[1], radius, 0, 2 * Math.PI)
 
-				function drawEmoji(context, center, radius, emojiSource){
-					
-					context.drawImage(emojiSource, center[0], center[1])
-				}
+		context.fill()
+	}
 
-				var emojis = []
-				emojis.push(makeEmoji("angry", "media/angry.svg", [0.8, 0, 0, 0]))
-				emojis.push(makeEmoji("smile", "media/smile.svg", [0, 0, 0, 0.8]))
+	function makeEmoji(name, src, weights){
+		var emoji = {
+			name: name,
+			src: src,
+			weights: weights.slice(0)
+		}
 
-				function calculateDistanceSquared(weightArray, emojiWeightArray){
-					var d = 0;
+		var source = new Image()
+		source.src = src
 
-					for(var i = 0; i < weightArray.length; i++)
-						d += Math.pow(weightArray[i] - emojiWeightArray[i], 2)
+		emoji.source = source
 
-					return d
-				}
+		source.onload = function(){
+			emoji.source = source
+			globalSource = source
+		}
 
-				function calculateEmoji(weightArray){
-					//[angry, sad, surprised, happy]
-					var bestDistanceSquared = calculateDistanceSquared(weightArray, emojis[0].weights)
-					var bestEmojiIndex = 0
-					for(var i = 1; i < emojis.length; i++){
-						var distanceSquared = calculateDistanceSquared(weightArray, emojis[i].weights)
-						if(distanceSquared < bestDistanceSquared){
-							bestEmojiIndex = i
-							bestDistanceSquared = distanceSquared
-						}
-					}
+		return emoji
 
-					return emojis[bestEmojiIndex]
+	}
 
-				}
+	function drawEmoji(context, center, radius, emojiSource){
+		try{
+			context.drawImage(emojiSource, center[0] - radius, center[1] - radius, radius * 2, radius * 2)
+		} catch(e){
+			console.log(e)
+			console.log(emojiSource)
+		}
+	}
+
+	var emojis = []
+	var base = 0.1
+	var treble = 0.35
+	emojis.push(makeEmoji("neutral", "/img/neutral.svg", [base, base, base, base]))
+	emojis.push(makeEmoji("angry", "/img/angry.svg", [treble, base, base, base]))
+	emojis.push(makeEmoji("sad", "/img/crying.svg", [base, treble, base, base]))
+	emojis.push(makeEmoji("surprised", "/img/surprised.svg", [base, base, treble, base]))
+	emojis.push(makeEmoji("happy", "/img/smiling.svg", [base, base, base, treble]))
+
+	function calculateDistanceSquared(weightArray, emojiWeightArray){
+		var d = 0;
+
+		for(var i = 0; i < weightArray.length; i++)
+			d += Math.pow(weightArray[i] - emojiWeightArray[i], 2)
+
+		return d
+	}
+
+	function calculateEmoji(weightObjectArray){
+		// var bestDistanceSquared = calculateDistanceSquared(weightArray, emojis[0].weights)
+		// var bestEmojiIndex = 0
+		// for(var i = 1; i < emojis.length; i++){
+		// 	var distanceSquared = calculateDistanceSquared(weightArray, emojis[i].weights)
+		// 	if(distanceSquared < bestDistanceSquared){
+		// 		bestEmojiIndex = i
+		// 		bestDistanceSquared = distanceSquared
+		// 	}
+		// }//this doesn't work too well
+
+		// return emojis[bestEmojiIndex]
+
+		var highestWeight = base
+		var emotion = "neutral"
+
+		for(var i = 0; i < weightObjectArray.length; i++){
+			var weightObject = weightObjectArray[i]
+			var weight = weightObject.value
+			document.getElementById(i+"").innerHTML = weight
+			if(weight >= treble && weight > highestWeight){
+				highestWeight = weight
+				emotion = weightObject.emotion
+			}
+		}
 
 
-				function toWeightArray(er){
-					var ret = []
-					er.forEach(function(e){
-						ret.push(e.value)
-					})
-					return ret
-				}
+		for(var i = 0; i < emojis.length; i++){
+			if(emojis[i].name == emotion)
+				return emojis[i]
+		}
 
-				function drawLoop() {
-					requestAnimFrame(drawLoop);
-					overlayCC.clearRect(0, 0, 400, 300);
-					overlayCC.drawImage(vid, 0, 0, overlay.width, overlay.height);
-					//psrElement.innerHTML = "score :" + ctrack.getScore().toFixed(4);
-					if (ctrack.getCurrentPosition()) {
-						// ctrack.draw(overlay);
-						var positions = ctrack.getCurrentPosition()
-						
-						var boundingBox = computeBoundingBox(positions)
+		return null
 
-						var circleDetails = makeCircle(boundingBox)
-
-						drawCircle(overlayCC, circleDetails.center, circleDetails.radius)
+	}
 
 
+	function toWeightArray(er){
+		var ret = []
+		er.forEach(function(e){
+			ret.push(e.value)
+		})
+		return ret
+	}
 
-						var cp = ctrack.getCurrentParameters();
-						
-						var er = ec.meanPredict(cp);//tracks the emotion values
-						
-						//[angry, sad, surprised, happy]
-						if (er) {
-							var weightArray = toWeightArray(er)
-							lastWeightArray = weightArray
-							var emoji = calculateEmoji(weightArray)
-							drawEmoji(overlayCC, circleDetails.center, circleDetails.radius, emoji.source)
-						}
+	function drawLoop() {
+		requestAnimFrame(drawLoop);
+		overlayCC.clearRect(0, 0, 400, 300);
+		overlayCC.drawImage(vid, 0, 0, overlay.width, overlay.height);
+		//psrElement.innerHTML = "score :" + ctrack.getScore().toFixed(4);
+		if (ctrack.getCurrentPosition()) {
+			// ctrack.draw(overlay);
+			var positions = ctrack.getCurrentPosition()
+			
+			var boundingBox = computeBoundingBox(positions)
 
-						
+			var circleDetails = makeCircle(boundingBox)
 
-						
+			// drawCircle(overlayCC, circleDetails.center, circleDetails.radius)
 
-						for(var i = 0; i < positions.length; i++){
-							var position = positions[i];
-							var hueRatio = i / positions.length;
-							overlayCC.fillStyle = "hsl(" + (360 * hueRatio) + ", 50%, 50%)"
-							overlayCC.fillRect(position[0],position[1],1,1);
-						}
-					}
 
-				}
-				
-				var ec = new emotionClassifier();
-				ec.init(emotionModel);
-				var emotionData = ec.getBlank();	
+
+			var cp = ctrack.getCurrentParameters();
+			
+			var er = ec.meanPredict(cp);//tracks the emotion values
+			
+			//[angry, sad, surprised, happy]
+			if (er) {
+				var weightArray = toWeightArray(er)
+				lastWeightArray = weightArray
+				var emoji = calculateEmoji(er)
+				drawEmoji(overlayCC, circleDetails.center, circleDetails.radius, emoji.source)
+			}
+
+			
+
+			
+
+			// for(var i = 0; i < positions.length; i++){
+			// 	var position = positions[i];
+			// 	var hueRatio = i / positions.length;
+			// 	overlayCC.fillStyle = "hsl(" + (360 * hueRatio) + ", 50%, 50%)"
+			// 	overlayCC.fillRect(position[0],position[1],1,1);
+			// }
+		}
+
+	}
+
+	var ec = new emotionClassifier();
+	ec.init(emotionModel);
+	var emotionData = ec.getBlank();	
+
 			
 				
 			</script>

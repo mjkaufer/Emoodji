@@ -232,13 +232,26 @@
 	}
 
 	var emojis = []
-	var base = 0.05
+	var base = 0.25
 	var treble = 0.55
-	emojis.push(makeEmoji("neutral", "./img/neutral.svg", [base, base, base, base]))
-	emojis.push(makeEmoji("angry", "./img/angry.svg", [treble, base, base, base]))
-	emojis.push(makeEmoji("sad", "./img/crying.svg", [base, treble, base, base]))
-	emojis.push(makeEmoji("surprised", "./img/surprised.svg", [base, base, treble, base]))
-	emojis.push(makeEmoji("happy", "./img/smiling.svg", [base, base, base, treble]))
+	var moreTrebleScalar = 1.3
+	var moreBaseScalar = 1.2
+	var extraTreble = Math.min(treble * moreTrebleScalar, 0.9)
+	var extraBase = base * moreBaseScalar
+	var imageUrl = "./img/"
+
+	emojis.push(makeEmoji("neutral", imageUrl + "neutral.svg", [base, base, base, base]))
+
+	emojis.push(makeEmoji("angry", imageUrl + "angry.svg", [treble, base, base, base]))
+	emojis.push(makeEmoji("sad", imageUrl + "crying.svg", [base, treble, base, base]))
+	emojis.push(makeEmoji("surprised", imageUrl + "surprised.svg", [base, base, treble, base]))
+	emojis.push(makeEmoji("happy", imageUrl + "smiling.svg", [base, base, base, treble]))
+
+	emojis.push(makeEmoji("very angry", imageUrl + "more-angry.svg", [extraTreble, extraBase, extraBase, extraBase]))
+	emojis.push(makeEmoji("very sad", imageUrl + "more-crying.svg", [extraBase, extraTreble, extraBase, extraBase]))
+	emojis.push(makeEmoji("very surprised", imageUrl + "more-surprised.svg", [extraBase, extraBase, extraTreble, extraBase]))
+	emojis.push(makeEmoji("very happy", imageUrl + "more-smiling.svg", [extraBase, extraBase, extraBase, extraTreble]))
+
 
 	function calculateDistanceSquared(weightArray, emojiWeightArray){
 		var d = 0;

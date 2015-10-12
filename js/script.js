@@ -156,23 +156,31 @@
 	}
 
 	var emojis = []
-	var base = 0.25
-	var treble = 0.55
-	var moreTrebleScalar = 1.3
+	var baseMin = 0.2
+	var baseMax = 0.4
+	var base = (baseMax + baseMin) / 2
+	var treble = 0.6
+	var moreTrebleScalar = 1.45
 	var moreBaseScalar = 1.2
+	var angryScalar = 0.9
+	var sadScalar = 1.25
+	var verySadScalar = 0.95
 	var extraTreble = Math.min(treble * moreTrebleScalar, 0.9)
-	var extraBase = base * moreBaseScalar
+	// var extraBase = base * moreBaseScalar
+	var extraBase = base
 	var imageUrl = "./img/"
 
 	emojis.push(makeEmoji("neutral", imageUrl + "neutral.svg", [base, base, base, base]))
+	emojis.push(makeEmoji("neutral-high", imageUrl + "neutral.svg", [baseMax, baseMax, baseMax, baseMax]))
+	emojis.push(makeEmoji("neutral-low", imageUrl + "neutral.svg", [baseMin, baseMin, baseMin, baseMin]))
 
-	emojis.push(makeEmoji("angry", imageUrl + "angry.svg", [treble, base, base, base]))
-	emojis.push(makeEmoji("sad", imageUrl + "crying.svg", [base, treble, base, base]))
+	emojis.push(makeEmoji("angry", imageUrl + "angry.svg", [treble * angryScalar, base, base, base]))
+	emojis.push(makeEmoji("sad", imageUrl + "crying.svg", [base, treble * sadScalar, base, base]))
 	emojis.push(makeEmoji("surprised", imageUrl + "surprised.svg", [base, base, treble, base]))
 	emojis.push(makeEmoji("happy", imageUrl + "smiling.svg", [base, base, base, treble]))
 
-	emojis.push(makeEmoji("very angry", imageUrl + "more-angry.svg", [extraTreble, extraBase, extraBase, extraBase]))
-	emojis.push(makeEmoji("very sad", imageUrl + "more-crying.svg", [extraBase, extraTreble, extraBase, extraBase]))
+	emojis.push(makeEmoji("very angry", imageUrl + "more-angry.svg", [extraTreble * angryScalar, extraBase, extraBase, extraBase]))
+	emojis.push(makeEmoji("very sad", imageUrl + "more-crying.svg", [extraBase, extraTreble * verySadScalar, extraBase, extraBase]))
 	emojis.push(makeEmoji("very surprised", imageUrl + "more-surprised.svg", [extraBase, extraBase, extraTreble, extraBase]))
 	emojis.push(makeEmoji("very happy", imageUrl + "more-smiling.svg", [extraBase, extraBase, extraBase, extraTreble]))
 
